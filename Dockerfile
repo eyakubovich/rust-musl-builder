@@ -11,6 +11,9 @@ ARG TOOLCHAIN=stable
 # ALSO UPDATE hooks/build!
 ARG OPENSSL_VERSION=1.1.1s
 
+# The target architecture
+ARG ARCH=x86_64
+
 # Versions for other dependencies. Here are the places to check for new
 # releases:
 #
@@ -66,26 +69,26 @@ RUN apt-get update && \
 # - `cargo-about` generates a giant license file for all dependencies.
 # - `cargo-audit` checks for security vulnerabilities. We include it for backwards compat.
 # - `cargo-deny` does everything `cargo-audit` does, plus check licenses & many other things.
-RUN curl -fLO https://github.com/rust-lang-nursery/mdBook/releases/download/v$MDBOOK_VERSION/mdbook-v$MDBOOK_VERSION-x86_64-unknown-linux-gnu.tar.gz && \
-    tar xf mdbook-v$MDBOOK_VERSION-x86_64-unknown-linux-gnu.tar.gz && \
+RUN curl -fLO https://github.com/rust-lang-nursery/mdBook/releases/download/v$MDBOOK_VERSION/mdbook-v$MDBOOK_VERSION-$ARCH-unknown-linux-gnu.tar.gz && \
+    tar xf mdbook-v$MDBOOK_VERSION-$ARCH-unknown-linux-gnu.tar.gz && \
     mv mdbook /usr/local/bin/ && \
-    rm -f mdbook-v$MDBOOK_VERSION-x86_64-unknown-linux-gnu.tar.gz && \
+    rm -f mdbook-v$MDBOOK_VERSION-$ARCH-unknown-linux-gnu.tar.gz && \
     curl -fLO https://github.com/dylanowen/mdbook-graphviz/releases/download/v$MDBOOK_GRAPHVIZ_VERSION/mdbook-graphviz_v${MDBOOK_GRAPHVIZ_VERSION}_x86_64-unknown-linux-musl.zip && \
     unzip mdbook-graphviz_v${MDBOOK_GRAPHVIZ_VERSION}_x86_64-unknown-linux-musl.zip && \
     mv mdbook-graphviz /usr/local/bin/ && \
     rm -f mdbook-graphviz_v${MDBOOK_GRAPHVIZ_VERSION}_x86_64-unknown-linux-musl.zip && \
-    curl -fLO https://github.com/EmbarkStudios/cargo-about/releases/download/$CARGO_ABOUT_VERSION/cargo-about-$CARGO_ABOUT_VERSION-x86_64-unknown-linux-musl.tar.gz && \
-    tar xf cargo-about-$CARGO_ABOUT_VERSION-x86_64-unknown-linux-musl.tar.gz && \
-    mv cargo-about-$CARGO_ABOUT_VERSION-x86_64-unknown-linux-musl/cargo-about /usr/local/bin/ && \
-    rm -rf cargo-about-$CARGO_ABOUT_VERSION-x86_64-unknown-linux-musl.tar.gz cargo-about-$CARGO_ABOUT_VERSION-x86_64-unknown-linux-musl && \
-    curl -fLO https://github.com/rustsec/rustsec/releases/download/cargo-audit%2Fv${CARGO_AUDIT_VERSION}/cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz && \
-    tar xf cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz && \
-    cp cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}/cargo-audit /usr/local/bin/ && \
-    rm -rf cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION} && \
-    curl -fLO https://github.com/EmbarkStudios/cargo-deny/releases/download/$CARGO_DENY_VERSION/cargo-deny-$CARGO_DENY_VERSION-x86_64-unknown-linux-musl.tar.gz && \
-    tar xf cargo-deny-$CARGO_DENY_VERSION-x86_64-unknown-linux-musl.tar.gz && \
-    mv cargo-deny-$CARGO_DENY_VERSION-x86_64-unknown-linux-musl/cargo-deny /usr/local/bin/ && \
-    rm -rf cargo-deny-$CARGO_DENY_VERSION-x86_64-unknown-linux-musl cargo-deny-$CARGO_DENY_VERSION-x86_64-unknown-linux-musl.tar.gz
+    curl -fLO https://github.com/EmbarkStudios/cargo-about/releases/download/$CARGO_ABOUT_VERSION/cargo-about-$CARGO_ABOUT_VERSION-$ARCH-unknown-linux-musl.tar.gz && \
+    tar xf cargo-about-$CARGO_ABOUT_VERSION-$ARCH-unknown-linux-musl.tar.gz && \
+    mv cargo-about-$CARGO_ABOUT_VERSION-$ARCH-unknown-linux-musl/cargo-about /usr/local/bin/ && \
+    rm -rf cargo-about-$CARGO_ABOUT_VERSION-$ARCH-unknown-linux-musl.tar.gz cargo-about-$CARGO_ABOUT_VERSION-$ARCH-unknown-linux-musl && \
+    curl -fLO https://github.com/rustsec/rustsec/releases/download/cargo-audit%2Fv${CARGO_AUDIT_VERSION}/cargo-audit-$ARCH-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz && \
+    tar xf cargo-audit-$ARCH-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz && \
+    cp cargo-audit-$ARCH-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}/cargo-audit /usr/local/bin/ && \
+    rm -rf cargo-audit-$ARCH-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz cargo-audit-$ARCH-unknown-linux-gnu-v${CARGO_AUDIT_VERSION} && \
+    curl -fLO https://github.com/EmbarkStudios/cargo-deny/releases/download/$CARGO_DENY_VERSION/cargo-deny-$CARGO_DENY_VERSION-$ARCH-unknown-linux-musl.tar.gz && \
+    tar xf cargo-deny-$CARGO_DENY_VERSION-$ARCH-unknown-linux-musl.tar.gz && \
+    mv cargo-deny-$CARGO_DENY_VERSION-$ARCH-unknown-linux-musl/cargo-deny /usr/local/bin/ && \
+    rm -rf cargo-deny-$CARGO_DENY_VERSION-$ARCH-unknown-linux-musl cargo-deny-$CARGO_DENY_VERSION-$ARCH-unknown-linux-musl.tar.gz
 
 # Static linking for C++ code
 RUN ln -s "/usr/bin/g++" "/usr/bin/musl-g++"
@@ -101,14 +104,14 @@ RUN echo "Building OpenSSL" && \
     ls /usr/include/linux && \
     mkdir -p /usr/local/musl/include && \
     ln -s /usr/include/linux /usr/local/musl/include/linux && \
-    ln -s /usr/include/x86_64-linux-gnu/asm /usr/local/musl/include/asm && \
+    ln -s /usr/include/$ARCH-linux-gnu/asm /usr/local/musl/include/asm && \
     ln -s /usr/include/asm-generic /usr/local/musl/include/asm-generic && \
     cd /tmp && \
     short_version="$(echo "$OPENSSL_VERSION" | sed s'/[a-z]$//' )" && \
     curl -fLO "https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz" || \
         curl -fLO "https://www.openssl.org/source/old/$short_version/openssl-$OPENSSL_VERSION.tar.gz" && \
     tar xvzf "openssl-$OPENSSL_VERSION.tar.gz" && cd "openssl-$OPENSSL_VERSION" && \
-    env CC=musl-gcc ./Configure no-shared no-zlib -fPIC --prefix=/usr/local/musl -DOPENSSL_NO_SECURE_MEMORY linux-x86_64 && \
+    env CC=musl-gcc ./Configure no-shared no-zlib -fPIC --prefix=/usr/local/musl -DOPENSSL_NO_SECURE_MEMORY linux-$ARCH && \
     env C_INCLUDE_PATH=/usr/local/musl/include/ make depend && \
     env C_INCLUDE_PATH=/usr/local/musl/include/ make && \
     make install && \
@@ -163,7 +166,7 @@ RUN curl https://sh.rustup.rs -sSf | \
     env CARGO_HOME=/opt/rust/cargo \
         rustup component add clippy && \
     env CARGO_HOME=/opt/rust/cargo \
-        rustup target add x86_64-unknown-linux-musl
+        rustup target add $ARCH-unknown-linux-musl
 ADD cargo-config.toml /opt/rust/cargo/config
 
 # Set up our environment variables so that we cross-compile using musl-libc by
